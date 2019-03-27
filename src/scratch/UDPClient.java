@@ -1,13 +1,15 @@
+package scratch;
+
 
 import java.net.*;
 import java.io.*;
 
-public class UDPClient2 {
+public class UDPClient {
 
     public static void main(String args[]) {
         String args1 = "228.5.6.7";
         // String args1 = "localhost";
-        String args0 = "UDPCliente2: Hello";
+        String args0 = "UDPCliente: Hello";
         
         // args give message contents and destination hostname
         DatagramSocket aSocket = null;
@@ -19,11 +21,13 @@ public class UDPClient2 {
             int serverPort = 6789;
             DatagramPacket request = new DatagramPacket(m, args0.length(), aHost, serverPort);
             aSocket.send(request);
+
             byte[] buffer = new byte[1000];
             DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
             aSocket.receive(reply);
             System.out.println("Reply: " + new String(reply.getData()));
             aSocket.close();
+
         } catch (SocketException e) {
             System.out.println("Socket: " + e.getMessage());
         } catch (IOException e) {

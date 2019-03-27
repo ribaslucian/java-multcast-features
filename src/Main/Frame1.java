@@ -12,7 +12,7 @@ import java.util.HashMap;
  *
  * @author Lucian
  */
-public class Main {
+public class Frame1 {
     
     public static void main(String args[]) {
         

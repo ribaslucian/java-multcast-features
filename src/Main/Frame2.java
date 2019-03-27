@@ -5,6 +5,7 @@
  */
 package Main;
 
+import Multcast.User;
 import Multcast.Message;
 import java.util.HashMap;
 
@@ -12,7 +13,7 @@ import java.util.HashMap;
  *
  * @author Lucian
  */
-public class Main2 {
+public class Frame2 {
     
     public static void main(String args[]) {
         User u2 = new User("Usuário 02");
