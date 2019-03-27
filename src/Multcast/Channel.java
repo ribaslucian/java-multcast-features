@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +24,24 @@ public class Channel {
     public InetAddress channel = null;
     public MulticastSocket socket = null;
     public User user;
+    
+    /**
+     * Lista estatica de recursos que possui o canal.
+     * 
+     * FeaturesName: UserName
+     * 
+     * UserName: Usuario que esta utilizando o recurso no momento
+     */
+    public static HashMap<String, String> features = new HashMap<String, String>() {{
+            put("print", "");
+            put("fax", "");
+            put("scanner", "");
+            put("feature1", "");
+            put("feature2", "");
+            put("feature3", "");
+            put("feature4", "");
+            put("feature5", "");
+        }};
 
     /**
      * Ao iniciar a classe entrara no canal de comunicacao
@@ -82,6 +101,7 @@ public class Channel {
         Message m = new Message();
         m.put("name", user.name);
         m.put("message", message);
+//        m.put("feature", "fax");
         
         byte[] bytes = m.serialize().getBytes();
         DatagramPacket out = new DatagramPacket(bytes, bytes.length, channel, port);
@@ -110,7 +130,7 @@ public class Channel {
         String data = new String(in.getData());
         Message message = new Message(data);
         
-        // somente printar no log se a mensagem nao for minha
+        // somente printar no log se a mensagem nao de propria autoria
         if (!message.get("name").equals(user.name)) {
             System.out.println("Received in [" + user.name + "]: " + data);
         }

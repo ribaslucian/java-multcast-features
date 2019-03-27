@@ -3,12 +3,10 @@ package Multcast;
 import java.util.HashMap;
 import java.util.Set;
 
+/**
+ * Os dados da mensagem serao varios parametros organizador em uma HashMap
+ */
 public class Message extends HashMap<String, String> {
-
-    /**
-     * Os dados da mensagem serao varios parametros organizador em uma HashMap
-     */
-//    public HashMap<String, String> data = new HashMap<>();
 
     public Message() {
     }
@@ -31,10 +29,11 @@ public class Message extends HashMap<String, String> {
         String serial = "";
         Set<String> keys = keySet();
 
-        for (String key : keys)
+        for (String key : keys) {
             serial = serial + key + "::" + get(key) + "__";
-        
-        serial = serial.substring(0, serial.length()-2); 
+        }
+
+        serial = serial.substring(0, serial.length() - 2);
 
         return serial;
     }
