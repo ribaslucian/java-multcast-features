@@ -35,12 +35,17 @@ public class RSA {
 //        byte[] decrypted = decrypt(encrypted);
 //        System.out.println(new String(decrypted));
     }
+    
+    public byte[] encrypt(String message) {
+        return encrypt(privateKey, message);
+    }
+    
+    public byte[] decrypt(byte[] encrypted) {
+        return decrypt(publicKey, encrypted);
+    }
 
     /**
      * Encripta uma mensagem com a chave privada e retorna os Bytes.
-     *
-     * @param message
-     * @return
      */
     public static byte[] encrypt(PrivateKey privateKey, String message) {
         try {
@@ -54,6 +59,9 @@ public class RSA {
         return null;
     }
 
+    /**
+     * Decripta uma mensagem com a chave publica e retorna os Bytes.
+     */
     public static byte[] decrypt(PublicKey publicKey, byte[] encrypted) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");

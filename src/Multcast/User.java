@@ -15,10 +15,19 @@ public class User  {
     
     public String name;
     public Channel channel;
+    public Screen screen;
 
     public User(String name) {
         this.name = name;
+        screen = new Screen(this);
         channel = new Channel(this);
+        
+        
+//        screen.log("Mensagem atual");
+//        screen.log("Mensagem atual");
+//        screen.log("Mensagem atual");
+//        screen.log("Mensagem atual");
+//        screen.log("Mensagem atual");
     }
     
 }
