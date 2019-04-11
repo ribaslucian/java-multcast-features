@@ -1,33 +1,23 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Multcast;
 
 import Multcast.Channel;
 
-/**
- *
- * @author Lucian
- */
 public class User  {
     
     public String name;
+    
+    // atributo necessario para comunicacao do usuario com a rede
     public Channel channel;
+    
+    // atributo necessario para visualizacao da dinamica do canal de comunicacao
     public Screen screen;
 
     public User(String name) {
         this.name = name;
+        
+        // iniciamos os servicos para um Usuario RSA
         screen = new Screen(this);
         channel = new Channel(this);
-        
-        
-//        screen.log("Mensagem atual");
-//        screen.log("Mensagem atual");
-//        screen.log("Mensagem atual");
-//        screen.log("Mensagem atual");
-//        screen.log("Mensagem atual");
     }
     
 }
