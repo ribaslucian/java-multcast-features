@@ -113,18 +113,15 @@ public class Channel {
 
         try {
             socket.receive(in);
-            
+
             new Thread() {
 
                 @Override
                 public void run() {
 
-                    
                     // convertemos mensagem para modelo padronizado no canal
                     String data = new String(in.getData());
                     Message message = new Message(data);
-
-
 
                     // alguem solicitando recurso
                     if (message.get("type").trim().equals("feature")) {
@@ -136,9 +133,6 @@ public class Channel {
                         message(m);
                     }
 
-
-
-
                     // alguem me respondeu a uma solicitacao minha de recurso
                     if (message.containsKey("request_id") && message.get("request_id").trim().equals(listenResponseId)) {
                         String ownersString = user.name;
@@ -148,15 +142,16 @@ public class Channel {
                             ownersString = message.get("message").trim();
                             String[] owners = ownersString.split(",");
 
-                            for (String owner: owners) {
-                                if (owner.equals(user.name))
+                            for (String owner : owners) {
+                                if (owner.equals(user.name)) {
                                     isWaiting = true;
+                                }
                             }
 
-                            if (!isWaiting)
+                            if (!isWaiting) {
                                 ownersString += "," + user.name;
+                            }
                         }
-
 
                         user.screen.setFeatureOwners(ownersString);
 
@@ -166,12 +161,10 @@ public class Channel {
                         message(m);
                     }
 
-
                     // atualizar status do recurso
                     if (message.get("type").equals("feature_refresh")) {
                         user.screen.setFeatureOwners(message.get("message").trim());
                     }
-
 
                     // ignorar o resto do processamento se a mensagem for minha
                     if (message.get("name").equals(user.name)) {
@@ -179,21 +172,16 @@ public class Channel {
                         return;
                     }
 
-
                     // se mensagem de hello, alguem entrou no sistema: mensagem "hello"
                     if (message.get("message").trim().equals("hello")) {
                         // processar
                         // atraves desse escopo consigo saber quantos usuarios estao online
                     }
 
-
                     user.screen.log(data);
-                    
-                    
+
                 }
             }.start();
-
-            
 
         } catch (IOException e) {
             System.out.println("Exception: " + e.getMessage());
@@ -212,8 +200,9 @@ public class Channel {
         message.put("id", id);
 
         // aguardaremos responde para mensagem de solicitacao de recurso
-        if (message.get("type").equals("feature"))
+        if (message.get("type").equals("feature")) {
             listenResponseId = id;
+        }
 
         byte[] bytes = message.serialize().getBytes();
         DatagramPacket out = new DatagramPacket(bytes, bytes.length, channel, port);
@@ -224,7 +213,7 @@ public class Channel {
             System.out.println("Exception: " + e.getMessage());
         }
     }
-    
+
     public void message(Message message, String id) {
 //        String id = generateId();
 
@@ -233,8 +222,9 @@ public class Channel {
         message.put("id", id);
 
         // aguardaremos responde para mensagem de solicitacao de recurso
-        if (message.get("type").equals("feature"))
+        if (message.get("type").equals("feature")) {
             listenResponseId = id;
+        }
 
         byte[] bytes = message.serialize().getBytes();
         DatagramPacket out = new DatagramPacket(bytes, bytes.length, channel, port);
@@ -290,14 +280,15 @@ public class Channel {
         String ownersString = user.screen.getFeatureOwners();
         String[] owners = ownersString.split(",");
 
-        for (String owner: owners) {
+        for (String owner : owners) {
             if (owner.equals(user.name)) {
                 owners = Utils.remove(owners, user.name);
                 ownersString = Utils.implode(owners);
-                
-                if (ownersString.equals(""))
+
+                if (ownersString.equals("")) {
                     ownersString = "#";
-                
+                }
+
                 Message m = new Message();
                 m.put("type", "feature_refresh");
                 m.put("message", ownersString);
@@ -306,7 +297,7 @@ public class Channel {
             }
         }
     }
-    
+
     Thread timeoutThreat = new Thread() {
 
         @Override
@@ -318,15 +309,29 @@ public class Channel {
             }
         }
     };
-    
+
     String timeoutMessageId;
-    
+
     public void simulateTimeout() {
         timeoutMessageId = generateId();
+        user.screen.logRaw("waiting reponse message " + timeoutMessageId);
+
+        timeoutThreat = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    sleep(4000);
+                    user.screen.logRaw("timeout! no response for message " + timeoutMessageId);
+                } catch (Exception ex) {
+                    System.out.println(ex.getMessage());
+                }
+            }
+        };
+
         timeoutThreat.start();
-//        timeoutThreat.out
     }
-    
+
     public void simulateReceive() {
         timeoutThreat.interrupt();
         user.screen.logRaw("success! response for timeout message " + timeoutMessageId);
