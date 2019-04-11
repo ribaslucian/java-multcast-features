@@ -1,7 +1,8 @@
-package Multcast;
+package Main;
 
 import Multcast.Message;
 import Multcast.RSA;
+import Multcast.User;
 import Multcast.User;
 import com.sun.xml.internal.ws.util.StringUtils;
 import java.security.KeyPair;
@@ -11,22 +12,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Main {
+public class Screen1 {
 
     
 
     public static void main(String args[]) {
         
-//        String[] s1 = {"onee", "twoo"};
-//        String[] s2 = Utils.remove(s1, "twoo");
-//        
-//        System.out.println(s2[0]);
-//        
-//        System.out.println(Utils.implode(s2));
-        
-        
         User u1 = new User("Usuário 01");
-        User u2 = new User("Usuário 02");
+        
 //        User u3 = new User("Usuário 03");
 //        User u1 = new User("Usuário 03");
 

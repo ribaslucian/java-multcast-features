@@ -286,10 +286,24 @@ public class Screen extends javax.swing.JFrame {
 
     
     public String getFeatureOwners() {
-        return (String) jTable2.getModel().getValueAt(0, 1);
+        String owners = (String) jTable2.getModel().getValueAt(0, 1);
+        String[] ownerArray = owners.split(",");
+        
+        if (ownerArray[0].contains("*")) {
+            ownerArray[0] = ownerArray[0].substring(0, ownerArray[0].length() - 1);
+            owners = Utils.implode(ownerArray);
+        }
+        
+        return owners;
     }
     
     public void setFeatureOwners(String owners) {
+        if (!owners.equals("#") && !owners.contains("*")) {
+            String[] ownersArray = owners.split(",");
+            ownersArray[0] = ownersArray[0] + "*";
+            owners = Utils.implode(ownersArray);
+        }
+        
         DefaultTableModel model = (DefaultTableModel) jTable2.getModel();
         model.setValueAt(owners, 0, 1);
     }

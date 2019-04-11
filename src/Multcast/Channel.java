@@ -130,9 +130,7 @@ public class Channel {
             }
             
             
-//            System.out.println(data + "\n\n");
-            
-            
+
 
             // alguem me respondeu a uma solicitacao minha de recurso
             if (message.containsKey("request_id") && message.get("request_id").trim().equals(listenResponseId)) {
@@ -160,18 +158,17 @@ public class Channel {
                 m.put("message", ownersString);
                 message(m);
             }
-            
-            
-            // ignorar o resto do processamento se a mensagem for minha
-            if (message.get("name").equals(user.name)) {
-                user.screen.logRaw("self message ignored");
-                return;
-            }
 
             
             // atualizar status do recurso
             if (message.get("type").equals("feature_refresh")) {
                 user.screen.setFeatureOwners(message.get("message").trim());
+            }
+            
+            
+            // ignorar o resto do processamento se a mensagem for minha
+            if (message.get("name").equals(user.name)) {
+                user.screen.logRaw("self message ignored");
                 return;
             }
 
@@ -236,11 +233,12 @@ public class Channel {
 
     public void by() {
         try {
-            Message m = new Message();
-            m.put("type", "sys");
-            m.put("message", "by");
+//            Message m = new Message();
+//            m.put("type", "sys");
+//            m.put("message", "by");
+            featureUnallocate();
+
             socket.leaveGroup(channel);
-            message(m);
         } catch (IOException ex) {
             Logger.getLogger(Channel.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -256,14 +254,15 @@ public class Channel {
     public void featureUnallocate() {
         boolean isWaiting = false;
         String ownersString = user.screen.getFeatureOwners();
-        System.out.println(ownersString);
         String[] owners = ownersString.split(",");
 
         for (String owner: owners) {
             if (owner.equals(user.name)) {
                 owners = Utils.remove(owners, user.name);
                 ownersString = Utils.implode(owners);
-                System.out.println(ownersString);
+                
+                if (ownersString.equals(""))
+                    ownersString = "#";
                 
                 Message m = new Message();
                 m.put("type", "feature_refresh");
