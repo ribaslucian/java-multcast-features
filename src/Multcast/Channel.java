@@ -6,6 +6,7 @@ import static java.lang.Thread.sleep;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,7 +51,7 @@ public class Channel {
      * nesse atributo estatico.
      * <UserID: UserInstance>
      */
-//    public HashMap<String, User> users = new HashMap<String, User>();
+    public HashMap<String, String> usersPublicKeys = new HashMap<String, String>();
     /**
      * Ao iniciar a classe, o usuario entrara no canal de comunicacao
      */
@@ -132,7 +133,21 @@ public class Channel {
                         m.put("request_id", message.get("id"));
                         message(m);
                     }
+                    
+                    
+                    
+                    if (message.get("message").trim().equals("hello")) {
+                        usersPublicKeys.put(message.get("name"), message.get("public_key"));
+                        helloResponse();
+                    }
+                    
+                    
+                    if (message.get("message").trim().equals("hello_response")) {
+                        usersPublicKeys.put(message.get("name"), message.get("public_key"));
+                    }
+                    
 
+                    
                     // alguem me respondeu a uma solicitacao minha de recurso
                     if (message.containsKey("request_id") && message.get("request_id").trim().equals(listenResponseId)) {
                         String ownersString = user.name;
@@ -166,11 +181,32 @@ public class Channel {
                         user.screen.setFeatureOwners(message.get("message").trim());
                     }
 
+                    
                     // ignorar o resto do processamento se a mensagem for minha
-                    if (message.get("name").equals(user.name)) {
-                        user.screen.logRaw("self message ignored");
-                        return;
+//                    if (message.get("name").equals(user.name)) {
+//                        user.screen.logRaw("self message ignored");
+//                        return;
+//                    }
+                    
+                    
+                    
+                    
+                    // verificar se a mensagem eh de quem diz que eh
+                    if (usersPublicKeys.containsKey(message.get("name")) && message.get("name") != "") {
+                        String signedIDB64 = message.get("signed_id");
+                        byte[] signedIDBytes = Utils.base64ToBytes(signedIDB64);
+                        String id = message.get("id").trim();
+                        PublicKey pk = RSA.publicKeyByBase64(usersPublicKeys.get(message.get("name")));
+                        String signedIDStr = new String(RSA.decrypt(pk, signedIDBytes));
+
+                        if (id.equals(signedIDStr)) {
+                            System.out.println(id + ": message validated success from > " + message.get("name"));
+                        } else {
+                            System.out.println(id + ": invalid message security > " + message.get("name"));
+                        }
                     }
+
+
 
                     // se mensagem de hello, alguem entrou no sistema: mensagem "hello"
                     if (message.get("message").trim().equals("hello")) {
@@ -196,7 +232,7 @@ public class Channel {
         String id = generateId();
 
         message.put("name", user.name);
-        message.put("signed_id", new String(rsa.encrypt(id)));
+        message.put("signed_id", Utils.toBase64(rsa.encrypt(id)));
         message.put("id", id);
 
         // aguardaremos responde para mensagem de solicitacao de recurso
@@ -250,9 +286,17 @@ public class Channel {
         Message m = new Message();
         m.put("type", "sys");
         m.put("message", "hello");
-        m.put("public_key", rsa.publicKey.toString());
+        m.put("public_key", rsa.publicKeyBase64());
         message(m);
 
+    }
+
+    public void helloResponse() {
+        Message m = new Message();
+        m.put("type", "sys");
+        m.put("message", "hello_reponse");
+        m.put("public_key", rsa.publicKeyBase64());
+        message(m);
     }
 
     public void by() {

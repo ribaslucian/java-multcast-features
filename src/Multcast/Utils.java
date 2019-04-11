@@ -1,5 +1,14 @@
 package Multcast;
 
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Utils {
     
     public static String[] remove(String[] data, String delete) {
@@ -36,5 +45,28 @@ public class Utils {
         
         return dataString;
     }
+    
+    public static PublicKey stringToPublicKey(String publicK) {
+        try {
+            byte[] publicBytes = Base64.getDecoder().decode(publicK);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            return keyFactory.generatePublic(keySpec);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        
+        return null;
+    }
+    
+    
+    public static String toBase64(byte[] str) {
+        return new String(Base64.getEncoder().encodeToString(str));
+    }
+    
+    public static byte[] base64ToBytes(String str) {
+        return Base64.getDecoder().decode(str);
+    }
+
     
 }

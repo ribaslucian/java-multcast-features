@@ -1,16 +1,22 @@
 package Multcast;
 
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.Cipher;
 
 public class RSA {
 
-    PublicKey publicKey;
-    PrivateKey privateKey;
+    public PublicKey publicKey;
+    public PrivateKey privateKey;
 
     public RSA() {
         KeyPair pair = getPair();
@@ -35,11 +41,11 @@ public class RSA {
 //        byte[] decrypted = decrypt(encrypted);
 //        System.out.println(new String(decrypted));
     }
-    
+
     public byte[] encrypt(String message) {
         return encrypt(privateKey, message);
     }
-    
+
     public byte[] decrypt(byte[] encrypted) {
         return decrypt(publicKey, encrypted);
     }
@@ -88,6 +94,25 @@ public class RSA {
             return keyPairGenerator.genKeyPair();
         } catch (Exception e) {
             System.out.println("Exception: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    public String publicKeyBase64() {
+        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+    }
+
+    public static PublicKey publicKeyByBase64(String publicKB64) {
+        byte[] pkBytes2 = Base64.getDecoder().decode(publicKB64);
+
+        KeyFactory keyFactory;
+        try {
+            keyFactory = KeyFactory.getInstance("RSA");
+            EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(pkBytes2);
+            return keyFactory.generatePublic(publicKeySpec);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
         }
 
         return null;
