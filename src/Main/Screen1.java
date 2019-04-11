@@ -1,28 +1,21 @@
 package Main;
 
 import Multcast.User;
+import java.time.Duration;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Screen1 {
 
     public static void main(String args[]) {
-
         User u1 = new User("Usuário 01");
-
-//        User u3 = new User("Usuário 03");
-//        User u1 = new User("Usuário 03");
-////        Uso da mensagem
-//        Message message = new Message();
-//        message.put("name", "Usuario 01");
-//        message.put("public_key", "kd83hd8yfofij123");
-//        message.put("message", "Hello!");
-//        
-//        message.unserialize(message.serialize());
-//        System.out.println(message);
-//        
-//
-//
-////        Uso do canal
-//        User u1 = new User("Usuário 01");
 //        User u2 = new User("Usuário 02");
 //        
 //        u1.channel.message("Olá!");

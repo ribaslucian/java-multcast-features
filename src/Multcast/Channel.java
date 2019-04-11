@@ -2,6 +2,7 @@ package Multcast;
 
 import java.awt.List;
 import java.io.IOException;
+import static java.lang.Thread.sleep;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -223,6 +224,27 @@ public class Channel {
             System.out.println("Exception: " + e.getMessage());
         }
     }
+    
+    public void message(Message message, String id) {
+//        String id = generateId();
+
+        message.put("name", user.name);
+        message.put("signed_id", new String(rsa.encrypt(id)));
+        message.put("id", id);
+
+        // aguardaremos responde para mensagem de solicitacao de recurso
+        if (message.get("type").equals("feature"))
+            listenResponseId = id;
+
+        byte[] bytes = message.serialize().getBytes();
+        DatagramPacket out = new DatagramPacket(bytes, bytes.length, channel, port);
+
+        try {
+            socket.send(out);
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+        }
+    }
 
     /**
      * Envia uma mensagem textual do usuario para o grupo todo.
@@ -283,6 +305,31 @@ public class Channel {
                 return;
             }
         }
+    }
+    
+    Thread timeoutThreat = new Thread() {
+
+        @Override
+        public void run() {
+            try {
+                sleep(3000);
+                user.screen.logRaw("timeout! no response for message " + timeoutMessageId);
+            } catch (Exception ex) {
+            }
+        }
+    };
+    
+    String timeoutMessageId;
+    
+    public void simulateTimeout() {
+        timeoutMessageId = generateId();
+        timeoutThreat.start();
+//        timeoutThreat.out
+    }
+    
+    public void simulateReceive() {
+        timeoutThreat.interrupt();
+        user.screen.logRaw("success! response for timeout message " + timeoutMessageId);
     }
 
     /**
