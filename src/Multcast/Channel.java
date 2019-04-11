@@ -112,75 +112,87 @@ public class Channel {
 
         try {
             socket.receive(in);
-
-            // convertemos mensagem para modelo padronizado no canal
-            String data = new String(in.getData());
-            Message message = new Message(data);
-
             
-            
-            // alguem solicitando recurso
-            if (message.get("type").trim().equals("feature")) {
+            new Thread() {
 
-                Message m = new Message();
-                m.put("type", "feature_response");
-                m.put("message", user.screen.getFeatureOwners());
-                m.put("request_id", message.get("id"));
-                message(m);
-            }
-            
-            
+                @Override
+                public void run() {
 
-
-            // alguem me respondeu a uma solicitacao minha de recurso
-            if (message.containsKey("request_id") && message.get("request_id").trim().equals(listenResponseId)) {
-                String ownersString = user.name;
-                
-                if (!message.get("message").equals("#")) {
-                    boolean isWaiting = false;
-                    ownersString = message.get("message").trim();
-                    String[] owners = ownersString.split(",");
                     
-                    for (String owner: owners) {
-                        if (owner.equals(user.name))
-                            isWaiting = true;
+                    // convertemos mensagem para modelo padronizado no canal
+                    String data = new String(in.getData());
+                    Message message = new Message(data);
+
+
+
+                    // alguem solicitando recurso
+                    if (message.get("type").trim().equals("feature")) {
+
+                        Message m = new Message();
+                        m.put("type", "feature_response");
+                        m.put("message", user.screen.getFeatureOwners());
+                        m.put("request_id", message.get("id"));
+                        message(m);
                     }
+
+
+
+
+                    // alguem me respondeu a uma solicitacao minha de recurso
+                    if (message.containsKey("request_id") && message.get("request_id").trim().equals(listenResponseId)) {
+                        String ownersString = user.name;
+
+                        if (!message.get("message").equals("#")) {
+                            boolean isWaiting = false;
+                            ownersString = message.get("message").trim();
+                            String[] owners = ownersString.split(",");
+
+                            for (String owner: owners) {
+                                if (owner.equals(user.name))
+                                    isWaiting = true;
+                            }
+
+                            if (!isWaiting)
+                                ownersString += "," + user.name;
+                        }
+
+
+                        user.screen.setFeatureOwners(ownersString);
+
+                        Message m = new Message();
+                        m.put("type", "feature_refresh");
+                        m.put("message", ownersString);
+                        message(m);
+                    }
+
+
+                    // atualizar status do recurso
+                    if (message.get("type").equals("feature_refresh")) {
+                        user.screen.setFeatureOwners(message.get("message").trim());
+                    }
+
+
+                    // ignorar o resto do processamento se a mensagem for minha
+                    if (message.get("name").equals(user.name)) {
+                        user.screen.logRaw("self message ignored");
+                        return;
+                    }
+
+
+                    // se mensagem de hello, alguem entrou no sistema: mensagem "hello"
+                    if (message.get("message").trim().equals("hello")) {
+                        // processar
+                        // atraves desse escopo consigo saber quantos usuarios estao online
+                    }
+
+
+                    user.screen.log(data);
                     
-                    if (!isWaiting)
-                        ownersString += "," + user.name;
+                    
                 }
-                
-                
-                user.screen.setFeatureOwners(ownersString);
-                
-                Message m = new Message();
-                m.put("type", "feature_refresh");
-                m.put("message", ownersString);
-                message(m);
-            }
+            }.start();
 
             
-            // atualizar status do recurso
-            if (message.get("type").equals("feature_refresh")) {
-                user.screen.setFeatureOwners(message.get("message").trim());
-            }
-            
-            
-            // ignorar o resto do processamento se a mensagem for minha
-            if (message.get("name").equals(user.name)) {
-                user.screen.logRaw("self message ignored");
-                return;
-            }
-
-            
-            // se mensagem de hello, alguem entrou no sistema: mensagem "hello"
-            if (message.get("message").trim().equals("hello")) {
-                // processar
-                // atraves desse escopo consigo saber quantos usuarios estao online
-            }
-            
-
-            user.screen.log(data);
 
         } catch (IOException e) {
             System.out.println("Exception: " + e.getMessage());
