@@ -1,17 +1,35 @@
-package Main;
+package Multcast;
 
 import Multcast.Message;
 import Multcast.RSA;
 import Multcast.User;
+import com.sun.xml.internal.ws.util.StringUtils;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Main {
+
     
+
     public static void main(String args[]) {
         
+//        String[] s1 = {"onee", "twoo"};
+//        String[] s2 = Utils.remove(s1, "twoo");
+//        
+//        System.out.println(s2[0]);
+//        
+//        System.out.println(Utils.implode(s2));
         
+        
+        User u1 = new User("Usuário 01");
+        User u2 = new User("Usuário 02");
+//        User u3 = new User("Usuário 03");
+//        User u1 = new User("Usuário 03");
+
 ////        Uso da mensagem
 //        Message message = new Message();
 //        message.put("name", "Usuario 01");
@@ -57,7 +75,6 @@ public class Main {
 //        System.out.println("DECRYPTED_MESSAGE");
 //        byte[] decrypted = RSA.decrypt(publicKey, encrypted);
 //        System.out.println(new String(decrypted));
-        
     }
-    
+
 }

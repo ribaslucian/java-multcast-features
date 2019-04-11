@@ -1,15 +1,18 @@
 package Multcast;
 
-import Multcast.Channel;
-
 public class User  {
     
     public String name;
     
-    // atributo necessario para comunicacao do usuario com a rede
+    /**
+     * Atributo necessario para comunicacao do usuario com a rede.
+     */
     public Channel channel;
     
-    // atributo necessario para visualizacao da dinamica do canal de comunicacao
+    /**
+     * Atributo necessario para visualizacao da dinamica do canal de
+     * comunicacao, semelhante a ter uma TV e ligar num determinado Canal.
+     */
     public Screen screen;
 
     public User(String name) {

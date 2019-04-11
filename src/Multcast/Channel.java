@@ -1,9 +1,12 @@
 package Multcast;
 
+import java.awt.List;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -25,6 +28,8 @@ public class Channel {
     public User user;
     public RSA rsa = new RSA();
 
+    public String listenResponseId;
+
     /**
      * Lista estatica de recursos que possui o canal.
      *
@@ -34,7 +39,7 @@ public class Channel {
      */
     public static HashMap<String, String> features = new HashMap<String, String>() {
         {
-            put("print", "");
+            put("print", "#");
 //            put("fax", "");
         }
     };
@@ -112,17 +117,77 @@ public class Channel {
             String data = new String(in.getData());
             Message message = new Message(data);
 
+            
+            
+            // alguem solicitando recurso
+            if (message.get("type").trim().equals("feature")) {
+
+                Message m = new Message();
+                m.put("type", "feature_response");
+                m.put("message", user.screen.getFeatureOwners());
+                m.put("request_id", message.get("id"));
+                message(m);
+            }
+            
+            
+//            System.out.println(data + "\n\n");
+            
+            
+
+            // alguem me respondeu a uma solicitacao minha de recurso
+            if (message.containsKey("request_id") && message.get("request_id").trim().equals(listenResponseId)) {
+                String ownersString = user.name;
+                
+                if (!message.get("message").equals("#")) {
+                    boolean isWaiting = false;
+                    ownersString = message.get("message").trim();
+                    String[] owners = ownersString.split(",");
+                    
+                    for (String owner: owners) {
+                        if (owner.equals(user.name))
+                            isWaiting = true;
+                    }
+                    
+                    if (!isWaiting)
+                        ownersString += "," + user.name;
+                }
+                
+                
+                user.screen.setFeatureOwners(ownersString);
+                
+                Message m = new Message();
+                m.put("type", "feature_refresh");
+                m.put("message", ownersString);
+                message(m);
+            }
+            
+            
+            // ignorar o resto do processamento se a mensagem for minha
+            if (message.get("name").equals(user.name)) {
+                user.screen.logRaw("self message ignored");
+                return;
+            }
+
+            
+            // atualizar status do recurso
+            if (message.get("type").equals("feature_refresh")) {
+                user.screen.setFeatureOwners(message.get("message").trim());
+                return;
+            }
+
+            
+            // se mensagem de hello, alguem entrou no sistema: mensagem "hello"
+            if (message.get("message").trim().equals("hello")) {
+                // processar
+                // atraves desse escopo consigo saber quantos usuarios estao online
+            }
+            
+
             user.screen.log(data);
 
         } catch (IOException e) {
             System.out.println("Exception: " + e.getMessage());
         }
-
-        // somente printar no log se a mensagem nao de propria autoria
-//        if (!message.get("name").equals(user.name)) {
-//            user.screen.log("auto message ignored");
-//            System.out.println("Received in [" + user.name + "]: " + data);
-//        }
     }
 
     /**
@@ -131,8 +196,14 @@ public class Channel {
      */
     public void message(Message message) {
         String id = generateId();
+
+        message.put("name", user.name);
         message.put("signed_id", new String(rsa.encrypt(id)));
         message.put("id", id);
+
+        // aguardaremos responde para mensagem de solicitacao de recurso
+        if (message.get("type").equals("feature"))
+            listenResponseId = id;
 
         byte[] bytes = message.serialize().getBytes();
         DatagramPacket out = new DatagramPacket(bytes, bytes.length, channel, port);
@@ -149,19 +220,15 @@ public class Channel {
      */
     public void message(String message) {
         Message m = new Message();
-        m.put("name", user.name);
         m.put("message", message);
         m.put("type", "text");
-        m.put("for", "all");
         message(m);
     }
 
     public void hello() {
         Message m = new Message();
-        m.put("name", user.name);
         m.put("type", "sys");
         m.put("message", "hello");
-        m.put("for", "all");
         m.put("public_key", rsa.publicKey.toString());
         message(m);
 
@@ -170,10 +237,8 @@ public class Channel {
     public void by() {
         try {
             Message m = new Message();
-            m.put("name", user.name);
             m.put("type", "sys");
             m.put("message", "by");
-            m.put("for", "all");
             socket.leaveGroup(channel);
             message(m);
         } catch (IOException ex) {
@@ -183,11 +248,30 @@ public class Channel {
 
     public void feature(String featureName) {
         Message m = new Message();
-        m.put("name", user.name);
         m.put("type", "feature");
         m.put("message", featureName);
-        m.put("for", "all");
         message(m);
+    }
+
+    public void featureUnallocate() {
+        boolean isWaiting = false;
+        String ownersString = user.screen.getFeatureOwners();
+        System.out.println(ownersString);
+        String[] owners = ownersString.split(",");
+
+        for (String owner: owners) {
+            if (owner.equals(user.name)) {
+                owners = Utils.remove(owners, user.name);
+                ownersString = Utils.implode(owners);
+                System.out.println(ownersString);
+                
+                Message m = new Message();
+                m.put("type", "feature_refresh");
+                m.put("message", ownersString);
+                message(m);
+                return;
+            }
+        }
     }
 
     /**
